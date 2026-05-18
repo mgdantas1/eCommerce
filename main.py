@@ -3,7 +3,7 @@ from sqlmodel import select, Session
 from fastapi import FastAPI, Depends, HTTPException
 from database import create_db, get_session
 from contextlib import asynccontextmanager
-from models import Usuarios, Papeis, Produtos, Categorias, Pedidos
+from models import Usuarios, Papeis, Produtos, Categorias, Pedidos, Enderecos
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -33,7 +33,7 @@ def cadastrar_usuarios(session: SessionDep, user: Usuarios) -> Usuarios:
     raise HTTPException(status_code=400, detail='Usuário já cadastrado')
 
 @app.put('/users')
-def editar_papeis(session: SessionDep, id: int, user: Usuarios) -> Usuarios:
+def editar_usuarios(session: SessionDep, id: int, user: Usuarios) -> Usuarios:
     userUpdate = session.get(Usuarios, id)
     if userUpdate:
         userUpdate.nome = user.nome
@@ -65,10 +65,14 @@ def listar_papeis(session: SessionDep) -> list[Papeis]:
 
 @app.post('/papeis')
 def cadastrar_papeis(session: SessionDep, papel: Papeis) -> Papeis:
-    session.add(papel)
-    session.commit()
-    session.refresh(papel)
-    return papel
+    papelVerificar = session.exec(select(Papeis).where(papel.nome == Papeis.nome)).first()
+    if not papelVerificar:
+        session.add(papel)
+        session.commit()
+        session.refresh(papel)
+        return papel
+    
+    raise HTTPException(status_code=400, detail="O papel já existe")
     
 @app.put('/papeis')
 def editar_papeis(session: SessionDep, id: int, papel: Papeis) -> Papeis:
@@ -198,5 +202,26 @@ def editar_pedidos(session: SessionDep, pedido: Pedidos, id: int) -> Pedidos:
     raise HTTPException(status_code=400, detail='Pedido não encontrado')
 
 @app.delete('/pedidos')
-def excluir_pedidos(session: SessionDep):
-    pass
+def excluir_pedidos(session: SessionDep, id: int):
+    pedido = session.get(Pedidos, id)
+    if pedido:
+        session.delete(pedido)
+        session.commit()
+        return "Pedido deletado com sucesso"
+    
+    raise HTTPException(status_code=400, detail="O pedido não existe")
+
+# =-= ENDEREÇOS =-=
+
+@app.get('/enderecos')
+def listar_enderecos(session: SessionDep) -> list[Enderecos]:
+    enderecos = session.exec(select(Enderecos)).all()
+    return enderecos
+
+@app.post('/enderecos')
+def cadastrar_enderecos(session: SessionDep, endereco: Enderecos) -> Enderecos:
+    session.add(endereco)
+    session.commit()
+    session.refresh(endereco)
+    return endereco
+
