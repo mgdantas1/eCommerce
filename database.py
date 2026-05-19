@@ -1,5 +1,4 @@
 from sqlmodel import create_engine, Session, SQLModel
-from models import Usuarios
 
 DATABASE_URI = 'mysql+pymysql://root:admin@localhost:3306/ecommerce'
 
