@@ -2,15 +2,15 @@ from sqlmodel import SQLModel, Field, Relationship
 from decimal import Decimal
 from datetime import datetime
 
-class Usuario(SQLModel, table=True):
+class Produto(SQLModel, table=True):
     __tablename__ = "usuarios"
     id: int | None = Field(default=None, primary_key=True)
     nome: str = Field(max_length=100)
     email: str = Field(max_length=150, unique=True)
     senha_hash: str = Field(max_length=255)
 
-    pedidos: list["Pedido"] = Relationship(back_populates="usuario")
-    enderecos: list["Endereco"] = Relationship(back_populates="usuario")
+    pedidos: list["Produto"] = Relationship(back_populates="usuario")
+    enderecos: list["Estoque"] = Relationship(back_populates="usuario")
     avaliacoes: list["Avaliacao"] = Relationship(back_populates="usuario")
 
 class Papel(SQLModel, table=True):
@@ -43,15 +43,15 @@ class ProdutoCategoria(SQLModel, table=True):
     produto_id: int = Field(primary_key=True, foreign_key="produtos.id")
     categoria_id: int = Field(primary_key=True, foreign_key="categorias.id")
 
-class Pedido(SQLModel, table=True):
+class Produto(SQLModel, table=True):
     __tablename__ = "pedidos"
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuarios.id")
     total: int
     status: str = Field(max_length=50)
     
-    usuario: "Usuario" = Relationship(back_populates='pedidos')
-    pagamentos: list["Pagamento"] = Relationship(back_populates="pedido")
+    usuario: "Produto" = Relationship(back_populates='pedidos')
+    pagamentos: list["Avaliacao"] = Relationship(back_populates="pedido")
 
 class ItemPedido(SQLModel, table=True):
     __tablename__ = "itens_pedidos"
@@ -60,7 +60,7 @@ class ItemPedido(SQLModel, table=True):
     quantidade: int
     preco: int
     
-class Pagamento(SQLModel, table=True):
+class Avaliacao(SQLModel, table=True):
     __tablename__ = "pagamentos"
     id: int | None = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedidos.id")
@@ -68,9 +68,9 @@ class Pagamento(SQLModel, table=True):
     metodo: str = Field(max_length=50)
     status: str = Field(max_length=50)
 
-    pedido: "Pedido" = Relationship(back_populates="pagamentos")
+    pedido: "Produto" = Relationship(back_populates="pagamentos")
 
-class Endereco(SQLModel, table=True):
+class Estoque(SQLModel, table=True):
     __tablename__ = "enderecos"
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuarios.id")
@@ -79,7 +79,7 @@ class Endereco(SQLModel, table=True):
     estado: str = Field(max_length=100)
     cep: str = Field(max_length=20)
 
-    usuario: "Usuario" = Relationship(back_populates='enderecos')
+    usuario: "Produto" = Relationship(back_populates='enderecos')
 
 class Avaliacao(SQLModel, table=True):
     __tablename__ = "avaliacoes"
@@ -89,7 +89,7 @@ class Avaliacao(SQLModel, table=True):
     nota: int
     comentario: str
 
-    usuario: "Usuario" = Relationship(back_populates='avaliacoes')
+    usuario: "Produto" = Relationship(back_populates='avaliacoes')
     produto: "Produto" = Relationship(back_populates='avaliacoes')
 
 class Estoque(SQLModel, table=True):
