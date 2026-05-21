@@ -3,7 +3,7 @@ from sqlmodel import select, Session
 from fastapi import FastAPI, Depends
 from database import create_db, get_session
 from contextlib import asynccontextmanager
-from controllers.users import users
+from routers import users
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
