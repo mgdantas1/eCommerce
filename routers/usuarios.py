@@ -2,27 +2,28 @@ from database.database import get_session
 from typing import Annotated
 from fastapi import Depends, APIRouter, HTTPException
 from sqlmodel import Session, select
-from models.models import Usuarios
+from models.models import Usuario
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
 @router.get("/")
-def listar_usuarios(session: SessionDep) -> list[Usuarios]:
-    usuarios = session.exec(select(Usuarios)).all()
+def listar_usuarios(session: SessionDep) -> list[Usuario]:
+    usuarios = session.exec(select(Usuario)).all()
     return usuarios
 
 @router.get("/{id}")
-def listar_usuario_id(session: SessionDep, id: int) -> Usuarios:
-    user = session.get(Usuarios, id)
-    if not user:
-        raise HTTPException(status_code=400, detail="O usuário não existe") 
-    return user
+def listar_usuario_id(session: SessionDep, id: int) -> Usuario:
+    user = session.get(Usuario, id)
+    if user:
+        return user
+    
+    raise HTTPException(status_code=400, detail="O usuário não existe") 
 
 @router.post('/')
-def cadastrar_usuarios(session: SessionDep, user: Usuarios) -> Usuarios:
-    usuario = session.exec(select(Usuarios).where(Usuarios.email == user.email)).first()
+def cadastrar_usuarios(session: SessionDep, user: Usuario) -> Usuario:
+    usuario = session.exec(select(Usuario).where(Usuario.email == user.email)).first()
 
     if not usuario:
         session.add(user)
@@ -33,8 +34,8 @@ def cadastrar_usuarios(session: SessionDep, user: Usuarios) -> Usuarios:
     raise HTTPException(status_code=400, detail='Usuário já cadastrado')
 
 @router.put("/{id}")
-def update_usuario(id: int, usuario: Usuarios, session: SessionDep):
-    usuarioUpdate = session.get(Usuarios, id)
+def update_usuario(id: int, usuario: Usuario, session: SessionDep):
+    usuarioUpdate = session.get(Usuario, id)
 
     if usuarioUpdate:
         usuarioUpdate.sqlmodel_update(usuario.model_dump(exclude_unset=True))
@@ -47,7 +48,7 @@ def update_usuario(id: int, usuario: Usuarios, session: SessionDep):
 
 @router.delete('/{id}')
 def deletar_usuarios(session: SessionDep, id: int) -> str:
-    usuario = session.get(Usuarios, id)
+    usuario = session.get(Usuario, id)
     if usuario:
         session.delete(usuario)
         session.commit()
