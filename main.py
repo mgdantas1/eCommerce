@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import papeis, usuarios, produtos, categorias, pedidos, pagamentos, avaliacoes, enderecos, estoque
+from routers import papeis, usuarios, produtos, categorias, pedidos, pagamentos, avaliacoes, enderecos, estoque, auth
 
 app = FastAPI()
 app.include_router(usuarios.router)
@@ -11,6 +11,7 @@ app.include_router(pagamentos.router)
 app.include_router(enderecos.router)
 app.include_router(avaliacoes.router)
 app.include_router(estoque.router)
+app.include_router(auth.router)
 
 if __name__ == "__main__":
     import uvicorn
