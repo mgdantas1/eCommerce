@@ -3,6 +3,10 @@ from typing import Annotated
 from fastapi import Depends, APIRouter, HTTPException
 from sqlmodel import Session, select
 from models.models import Usuario
+from pwdlib import PasswordHash
+
+# serve para gerar o hash
+senha_context = PasswordHash.recommended()
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -24,8 +28,8 @@ def listar_usuario_id(session: SessionDep, id: int) -> Usuario:
 @router.post('/')
 def cadastrar_usuarios(session: SessionDep, user: Usuario) -> Usuario:
     usuario = session.exec(select(Usuario).where(Usuario.email == user.email)).first()
-
     if not usuario:
+        usuario.senha_hash = senha_context.hash(usuario.senha_hash)
         session.add(user)
         session.commit()
         session.refresh(user)
