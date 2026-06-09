@@ -28,14 +28,16 @@ def listar_usuario_id(session: SessionDep, id: int) -> Usuario:
 @router.post('/')
 def cadastrar_usuarios(session: SessionDep, user: Usuario) -> Usuario:
     usuario = session.exec(select(Usuario).where(Usuario.email == user.email)).first()
+    
     if not usuario:
-        usuario.senha_hash = senha_context.hash(usuario.senha_hash)
+        user.senha_hash = senha_context.hash(user.senha_hash)
         session.add(user)
         session.commit()
         session.refresh(user)
         return user
-
+    
     raise HTTPException(status_code=400, detail='Usuário já cadastrado')
+
 
 @router.put("/{id}")
 def update_usuario(id: int, usuario: Usuario, session: SessionDep):
@@ -43,6 +45,7 @@ def update_usuario(id: int, usuario: Usuario, session: SessionDep):
 
     if usuarioUpdate:
         usuarioUpdate.sqlmodel_update(usuario.model_dump(exclude_unset=True))
+        usuarioUpdate.senha_hash = senha_context.hash(usuarioUpdate.senha_hash)
         session.add(usuarioUpdate)
         session.commit()
         session.refresh(usuarioUpdate)
